@@ -9,6 +9,7 @@ use super::arch;
 use super::export;
 use super::import;
 use super::pe_headers::*;
+use super::relocation;
 use super::section::section_table;
 use crate::*;
 
@@ -23,6 +24,7 @@ pub struct ImageOwned {
     import_table: Option<import::ImportTable>,
     exception_table: exception::ExceptionTable,
     export_table: Option<export::ExportTable>,
+    relocation_table: relocation::RelocationTable,
 }
 
 impl fmt::Debug for ImageOwned {
@@ -36,6 +38,7 @@ impl fmt::Debug for ImageOwned {
         writeln!(f, "{:#X?}", self.import_table);
         writeln!(f, "{:#X?}", self.exception_table);
         writeln!(f, "{:#X?}", self.export_table);
+        writeln!(f, "{:#X?}", self.relocation_table);
 
         Ok(())
     }
@@ -55,6 +58,8 @@ impl ImageOwned {
 
         let export_table = export::ExportTable::from_image(&image_ref)?;
 
+        let relocation_table = relocation::RelocationTable::from_image(&image_ref)?;
+
         let headers = image_ref.headers_to_owned().unwrap();
 
         let section_table = image_ref.section_table_to_owned().unwrap();
@@ -66,6 +71,7 @@ impl ImageOwned {
             import_table,
             exception_table,
             export_table,
+            relocation_table,
         })
     }
 }
@@ -124,6 +130,7 @@ impl<'a> ImageRef<'a> {
         import_table: Option<import::ImportTable>,
         exception_table: exception::ExceptionTable,
         export_table: Option<export::ExportTable>,
+        relocation_table: relocation::RelocationTable,
     ) -> ImageOwned {
         ImageOwned {
             bytes: self.bytes.to_vec(),
@@ -132,6 +139,7 @@ impl<'a> ImageRef<'a> {
             import_table,
             exception_table,
             export_table,
+            relocation_table,
         }
     }
 }

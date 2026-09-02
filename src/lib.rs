@@ -8,6 +8,7 @@ mod export;
 mod import;
 pub mod pe;
 mod pe_headers;
+mod relocation;
 mod section;
 pub mod windows_types;
 
