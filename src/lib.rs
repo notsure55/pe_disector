@@ -4,6 +4,7 @@ use std::path::Path;
 
 mod arch;
 mod exception;
+mod export;
 mod import;
 pub mod pe;
 mod pe_headers;

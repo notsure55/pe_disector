@@ -6,6 +6,7 @@ use std::io::Read;
 use std::path::Path;
 
 use super::arch;
+use super::export;
 use super::import;
 use super::pe_headers::*;
 use super::section::section_table;
@@ -21,6 +22,7 @@ pub struct ImageOwned {
     section_table: section_table::SectionTableOwned,
     import_table: Option<import::ImportTable>,
     exception_table: exception::ExceptionTable,
+    export_table: Option<export::ExportTable>,
 }
 
 impl fmt::Debug for ImageOwned {
@@ -33,6 +35,7 @@ impl fmt::Debug for ImageOwned {
         );
         writeln!(f, "{:#X?}", self.import_table);
         writeln!(f, "{:#X?}", self.exception_table);
+        writeln!(f, "{:#X?}", self.export_table);
 
         Ok(())
     }
@@ -50,6 +53,8 @@ impl ImageOwned {
 
         let exception_table = exception::ExceptionTable::from_image(&image_ref)?;
 
+        let export_table = export::ExportTable::from_image(&image_ref)?;
+
         let headers = image_ref.headers_to_owned().unwrap();
 
         let section_table = image_ref.section_table_to_owned().unwrap();
@@ -60,6 +65,7 @@ impl ImageOwned {
             section_table,
             import_table,
             exception_table,
+            export_table,
         })
     }
 }
@@ -117,6 +123,7 @@ impl<'a> ImageRef<'a> {
         self,
         import_table: Option<import::ImportTable>,
         exception_table: exception::ExceptionTable,
+        export_table: Option<export::ExportTable>,
     ) -> ImageOwned {
         ImageOwned {
             bytes: self.bytes.to_vec(),
@@ -124,6 +131,7 @@ impl<'a> ImageRef<'a> {
             section_table: self.section_table.unwrap().to_owned(),
             import_table,
             exception_table,
+            export_table,
         }
     }
 }
@@ -152,6 +160,21 @@ impl<'a> Image for ImageRef<'a> {
 }
 
 pub trait Image: fmt::Debug {
+    fn read_slice_from_rva<T>(&self, rva: Rva, size: usize) -> Result<&[T]> {
+        let fo = self.rva_to_fo(rva)?;
+
+        let slice = unsafe {
+            std::slice::from_raw_parts(
+                self.bytes()
+                    .get(*fo..*fo + size)
+                    .ok_or_else(|| anyhow!("failed to get slice of bytes from rva and size"))?
+                    .as_ptr() as *const T,
+                size,
+            )
+        };
+
+        Ok(slice)
+    }
     fn rva_to_fo(&self, rva: Rva) -> Result<Fo> {
         for section_header in self.section_table().section_headers() {
             let raw = section_header.raw();

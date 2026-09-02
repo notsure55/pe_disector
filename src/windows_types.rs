@@ -198,3 +198,19 @@ pub struct UNWIND_INFO {
     pub count_of_unwind_codes: u8,
     pub frame_register_and_frame_register_offset: u8,
 }
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct IMAGE_EXPORT_DIRECTORY {
+    pub blank: u32,
+    pub time_data_stamp: u32,
+    pub major_version: u16,
+    pub minor_version: u16,
+    pub name: u32,
+    pub base: u32,
+    pub number_of_functions: u32,
+    pub number_of_names: u32,
+    pub address_of_functions: u32,
+    pub address_of_names: u32,
+    pub address_of_name_ordinals: u32,
+}
