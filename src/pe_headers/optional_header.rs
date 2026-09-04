@@ -1,10 +1,12 @@
 use crate::windows_types::*;
 
+use crate::pe::Va;
+
 use std::fmt;
 
 pub trait OptionalHeader: fmt::Debug {
     fn magic(&self) -> u16;
-    fn image_base(&self) -> usize;
+    fn image_base(&self) -> Va;
     fn is_amd_intel(&self) -> bool {
         let magic = self.magic();
 
@@ -30,8 +32,8 @@ impl OptionalHeader for OptionalHeader32 {
     fn magic(&self) -> u16 {
         self.0.magic
     }
-    fn image_base(&self) -> usize {
-        usize::try_from(self.0.image_base).expect("Failed to turn image_base from u32 into usize?")
+    fn image_base(&self) -> Va {
+        Va::try_from(self.0.image_base).expect("Failed to turn image_base from u32 into va?")
     }
     fn data_directory(&self) -> &[IMAGE_DATA_DIRECTORY; 16] {
         &self.0.data_directory
@@ -51,8 +53,8 @@ impl OptionalHeader for OptionalHeader64 {
     fn magic(&self) -> u16 {
         self.0.magic
     }
-    fn image_base(&self) -> usize {
-        usize::try_from(self.0.image_base).expect("Failed to turn image_base from u32 into usize?")
+    fn image_base(&self) -> Va {
+        Va::try_from(self.0.image_base).expect("Failed to turn image_base from u32 into va?")
     }
     fn data_directory(&self) -> &[IMAGE_DATA_DIRECTORY; 16] {
         &self.0.data_directory

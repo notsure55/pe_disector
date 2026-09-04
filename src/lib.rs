@@ -9,7 +9,7 @@ mod import;
 pub mod pe;
 mod pe_headers;
 mod relocation;
-mod section;
+pub mod section;
 pub mod windows_types;
 
 use pe::*;
@@ -47,6 +47,17 @@ macro_rules! to_usize {
     };
 }
 
+#[macro_export]
+macro_rules! to_bytes {
+    ($target:expr) => {{
+        let size = std::mem::size_of_val(&$target);
+        unsafe {
+            let ptr = (&raw const $target).cast::<u8>();
+            std::slice::from_raw_parts(ptr, size)
+        }
+    }};
+}
+
 use std::convert;
 use std::ops;
 
@@ -66,6 +77,20 @@ macro_rules! impl_arithmetic_traits_for_wrappers {
 
             fn add(self, other: $type) -> Self {
                 Self(self.0 + other)
+            }
+        }
+        impl ops::Add<Self> for $name {
+            type Output = Self;
+
+            fn add(self, other: Self) -> Self {
+                Self(self.0 + other.0)
+            }
+        }
+        impl ops::Sub<Self> for $name {
+            type Output = Self;
+
+            fn sub(self, other: Self) -> Self {
+                Self(self.0 + other.0)
             }
         }
         impl ops::BitOr<$type> for $name {
@@ -95,6 +120,15 @@ macro_rules! impl_arithmetic_traits_for_wrappers {
             type Error = anyhow::Error;
 
             fn try_from(value: u32) -> Result<Self, Self::Error> {
+                Ok(Self {
+                    0: usize::try_from(value)?,
+                })
+            }
+        }
+        impl convert::TryFrom<u64> for $name {
+            type Error = anyhow::Error;
+
+            fn try_from(value: u64) -> Result<Self, Self::Error> {
                 Ok(Self {
                     0: usize::try_from(value)?,
                 })

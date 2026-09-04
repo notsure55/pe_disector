@@ -74,6 +74,47 @@ impl ImageOwned {
             relocation_table,
         })
     }
+
+    pub fn write_to_rva<T>(&mut self, rva: Rva, value: T) -> Result<()> {
+        let fo = self.rva_to_fo(rva)?;
+
+        unsafe {
+            (self
+                .bytes
+                .get_mut(*fo..*fo + std::mem::size_of::<T>())
+                .ok_or_else(|| anyhow!("Failed to write to rva {:?}", rva))?
+                .as_mut_ptr() as *mut T)
+                .write_unaligned(value);
+        }
+
+        Ok(())
+    }
+
+    pub fn new_from_parts(
+        headers: PeHeaders,
+        section_table: section_table::SectionTableOwned,
+        import_table: Option<import::ImportTable>,
+        exception_table: exception::ExceptionTable,
+        export_table: Option<export::ExportTable>,
+        relocation_table: relocation::RelocationTable,
+    ) -> Result<Self> {
+        let header_bytes = headers.to_bytes();
+        let section_table_bytes = section_table.to_bytes();
+
+        Ok(Self {
+            bytes: Vec::new(),
+            headers,
+            section_table,
+            import_table,
+            exception_table,
+            export_table,
+            relocation_table,
+        })
+    }
+
+    pub fn section_bytes(&self) -> Vec<u8> {
+        self.section_table.to_bytes()
+    }
 }
 
 impl Image for ImageOwned {
@@ -200,9 +241,9 @@ pub trait Image: fmt::Debug {
         ))
     }
     fn va_to_fo(&self, va: Va) -> Result<Fo> {
-        let image_base_va = to_usize!(self.headers().nt_header().optional_header().image_base());
+        let image_base_va = self.headers().nt_header().optional_header().image_base();
 
-        let rva = Rva::from(*va - image_base_va);
+        let rva = Rva::from(*va - *image_base_va);
 
         self.rva_to_fo(rva)
     }

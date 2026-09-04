@@ -4,11 +4,9 @@ use std::fmt;
 use std::ptr;
 use std::vec::Vec;
 
-use crate::*;
-
 use super::section_header::*;
-
 use crate::windows_types::*;
+use crate::*;
 
 pub struct SectionTableOwned {
     sections: Vec<SectionHeaderOwned>,
@@ -33,7 +31,7 @@ impl SectionTableOwned {
             )
         }
         .iter()
-        .map(|raw_header| SectionHeaderOwned::from_binary(raw_header.clone(), bytes))
+        .map(|raw_header| SectionHeaderOwned::from_binary(raw_header.clone(), bytes, start))
         .collect();
 
         Ok(Self {
@@ -42,6 +40,23 @@ impl SectionTableOwned {
     }
     pub fn from_sections(sections: Vec<SectionHeaderOwned>) -> Self {
         Self { sections }
+    }
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut section_header_bytes =
+            Vec::with_capacity(std::mem::size_of::<IMAGE_SECTION_HEADER>() * self.sections.len());
+
+        let mut section_bytes = Vec::new();
+
+        for section in self.sections.iter() {
+            let header_bytes = to_bytes!(*section.raw());
+
+            section_header_bytes.extend_from_slice(header_bytes);
+            section_bytes.extend_from_slice(section.bytes());
+        }
+
+        section_header_bytes.append(&mut section_bytes);
+
+        section_header_bytes
     }
 }
 

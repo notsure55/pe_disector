@@ -15,7 +15,11 @@ pub struct SectionHeaderOwned {
 }
 
 impl SectionHeaderOwned {
-    pub fn from_binary(raw_header: IMAGE_SECTION_HEADER, binary_bytes: &[u8]) -> Result<Self> {
+    pub fn from_binary(
+        raw_header: IMAGE_SECTION_HEADER,
+        binary_bytes: &[u8],
+        start: usize,
+    ) -> Result<Self> {
         let bytes = binary_bytes
             .get(
                 to_usize!(raw_header.pointer_to_raw_data)

@@ -1,3 +1,4 @@
-samples/*
+samples/*.dll
+samples/*.exe
 /target
 **~

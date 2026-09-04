@@ -3,6 +3,7 @@ use crate::windows_types::*;
 
 use super::file_header::*;
 use super::optional_header::*;
+use crate::to_bytes;
 use std::fmt;
 
 pub trait NtHeader: fmt::Debug {
@@ -23,6 +24,7 @@ pub trait NtHeader: fmt::Debug {
             }
         }
     }
+    fn to_bytes(&self) -> &[u8];
 }
 
 #[derive(Debug)]
@@ -55,6 +57,9 @@ impl NtHeader for NtHeaders32 {
     fn size(&self) -> usize {
         std::mem::size_of::<IMAGE_NT_HEADERS32>()
     }
+    fn to_bytes(&self) -> &[u8] {
+        to_bytes!(self.raw)
+    }
 }
 
 #[derive(Debug)]
@@ -86,5 +91,8 @@ impl NtHeader for NtHeaders64 {
     }
     fn size(&self) -> usize {
         std::mem::size_of::<IMAGE_NT_HEADERS64>()
+    }
+    fn to_bytes(&self) -> &[u8] {
+        to_bytes!(self.raw)
     }
 }

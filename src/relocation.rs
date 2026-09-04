@@ -1,3 +1,4 @@
+use super::pe::ImageOwned;
 use crate::*;
 use anyhow::Result;
 use std::fmt;
@@ -27,19 +28,52 @@ impl RelocationBlock {
     }
 }
 
+#[derive(Debug)]
+enum RelocType {
+    ImageRelBasedAbsolute,
+    ImageRelBasedHigh,
+    ImageRelBasedLow,
+    ImageRelBasedHighlow,
+    ImageRelBasedHighadj,
+    ImageRelBasedMipsJmpaddr,
+    ImageRelBasedThumbMov32,
+    ImageRelBasedRiscvLow12s,
+    ImageRelBasedMipsJmpaddr16,
+    ImageRelBasedDir64,
+    Unknown,
+}
+
+impl RelocType {
+    pub const fn new(typ: u8) -> Self {
+        match typ {
+            0 => Self::ImageRelBasedAbsolute,
+            1 => Self::ImageRelBasedHigh,
+            2 => Self::ImageRelBasedLow,
+            3 => Self::ImageRelBasedHighlow,
+            4 => Self::ImageRelBasedHighadj,
+            5 => Self::ImageRelBasedMipsJmpaddr,
+            7 => Self::ImageRelBasedThumbMov32,
+            8 => Self::ImageRelBasedRiscvLow12s,
+            9 => Self::ImageRelBasedMipsJmpaddr16,
+            10 => Self::ImageRelBasedDir64,
+            _ => Self::Unknown,
+        }
+    }
+}
+
 #[repr(C)]
 #[derive(Clone)]
 struct TypeOffset(pub u16);
 
 impl fmt::Debug for TypeOffset {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        writeln!(f, "Offset: 0x{:X} Type: {:X}", self.offset(), self.typ())
+        write!(f, "Offset: 0x{:X} Type: {:?}", self.offset(), self.typ())
     }
 }
 
 impl TypeOffset {
-    pub fn typ(&self) -> u16 {
-        self.0 >> 12
+    pub fn typ(&self) -> RelocType {
+        RelocType::new((self.0 >> 12) as _)
     }
 
     pub fn offset(&self) -> u16 {
@@ -89,4 +123,36 @@ impl RelocationTable {
             blocks: relocation_blocks,
         })
     }
+
+    /*pub fn update_base_relocs(
+        &self,
+        bytes: &mut [u8],
+        old_image_base: Va,
+        new_image_base: Va,
+    ) -> Result<()> {
+        for block in self.blocks.iter() {
+            let page_rva = block.page_rva;
+
+            for type_offset in block.type_offsets.iter() {
+                let typ = type_offset.typ();
+                let offset = type_offset.offset();
+
+                let base_reloc_rva = page_rva + to_usize!(offset);
+
+                eprintln!("Found reloc {:#X?}", base_reloc_rva);
+
+                let base_reloc = image.read_from_rva::<Va>(base_reloc_rva)?;
+
+                eprintln!("Read reloc {:#X?}", base_reloc);
+
+                let new_base_reloc = base_reloc - old_image_base + new_image_base;
+
+                image.write_to_rva(base_reloc_rva, new_base_reloc)?;
+
+                eprintln!("Wrote new reloc {:#X?}", new_base_reloc);
+            }
+        }
+
+        Ok(())
+    }*/
 }
