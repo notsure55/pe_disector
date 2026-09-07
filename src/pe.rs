@@ -75,6 +75,22 @@ impl ImageOwned {
         })
     }
 
+    pub fn relocation_table(&self) -> &relocation::RelocationTable {
+        &self.relocation_table
+    }
+
+    /// retunrs back old image base
+    pub fn update_image_base(&mut self, new_image_base: Va) -> Result<()> {
+        relocation::update_base_relocs(self, new_image_base)?;
+
+        self.headers
+            .nt_header_mut()
+            .optional_header_mut()
+            .set_image_base(new_image_base);
+
+        Ok(())
+    }
+
     pub fn write_to_rva<T>(&mut self, rva: Rva, value: T) -> Result<()> {
         let fo = self.rva_to_fo(rva)?;
 
@@ -88,32 +104,6 @@ impl ImageOwned {
         }
 
         Ok(())
-    }
-
-    pub fn new_from_parts(
-        headers: PeHeaders,
-        section_table: section_table::SectionTableOwned,
-        import_table: Option<import::ImportTable>,
-        exception_table: exception::ExceptionTable,
-        export_table: Option<export::ExportTable>,
-        relocation_table: relocation::RelocationTable,
-    ) -> Result<Self> {
-        let header_bytes = headers.to_bytes();
-        let section_table_bytes = section_table.to_bytes();
-
-        Ok(Self {
-            bytes: Vec::new(),
-            headers,
-            section_table,
-            import_table,
-            exception_table,
-            export_table,
-            relocation_table,
-        })
-    }
-
-    pub fn section_bytes(&self) -> Vec<u8> {
-        self.section_table.to_bytes()
     }
 }
 

@@ -8,7 +8,9 @@ use std::fmt;
 
 pub trait NtHeader: fmt::Debug {
     fn file_header(&self) -> &FileHeader;
+    fn file_header_mut(&mut self) -> &mut FileHeader;
     fn optional_header(&self) -> &dyn OptionalHeader;
+    fn optional_header_mut(&mut self) -> &mut dyn OptionalHeader;
     fn size(&self) -> usize;
     fn is_optional_invalid_size(&self) -> bool {
         let file_header = self.file_header();
@@ -60,6 +62,12 @@ impl NtHeader for NtHeaders32 {
     fn to_bytes(&self) -> &[u8] {
         to_bytes!(self.raw)
     }
+    fn file_header_mut(&mut self) -> &mut FileHeader {
+        &mut self.file_header
+    }
+    fn optional_header_mut(&mut self) -> &mut dyn OptionalHeader {
+        &mut self.optional_header
+    }
 }
 
 #[derive(Debug)]
@@ -94,5 +102,11 @@ impl NtHeader for NtHeaders64 {
     }
     fn to_bytes(&self) -> &[u8] {
         to_bytes!(self.raw)
+    }
+    fn file_header_mut(&mut self) -> &mut FileHeader {
+        &mut self.file_header
+    }
+    fn optional_header_mut(&mut self) -> &mut dyn OptionalHeader {
+        &mut self.optional_header
     }
 }

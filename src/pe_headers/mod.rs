@@ -69,6 +69,9 @@ impl PeHeaders {
     pub fn nt_header(&self) -> &dyn NtHeader {
         self.nt_header.as_ref()
     }
+    pub fn nt_header_mut(&mut self) -> &mut dyn NtHeader {
+        self.nt_header.as_mut()
+    }
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut dos_header_bytes = to_bytes!(self.dos_header).to_vec();
         dos_header_bytes.extend_from_slice(&self.dos_stub.reserved);

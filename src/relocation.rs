@@ -123,36 +123,33 @@ impl RelocationTable {
             blocks: relocation_blocks,
         })
     }
+}
 
-    /*pub fn update_base_relocs(
-        &self,
-        bytes: &mut [u8],
-        old_image_base: Va,
-        new_image_base: Va,
-    ) -> Result<()> {
-        for block in self.blocks.iter() {
-            let page_rva = block.page_rva;
+pub fn update_base_relocs(image: &mut ImageOwned, new_image_base: Va) -> Result<()> {
+    let old_image_base = image.headers().nt_header().optional_header().image_base();
 
-            for type_offset in block.type_offsets.iter() {
-                let typ = type_offset.typ();
-                let offset = type_offset.offset();
+    for block in image.relocation_table().blocks.iter() {
+        let page_rva = block.page_rva;
 
-                let base_reloc_rva = page_rva + to_usize!(offset);
+        for type_offset in block.type_offsets.iter() {
+            let typ = type_offset.typ();
+            let offset = type_offset.offset();
 
-                eprintln!("Found reloc {:#X?}", base_reloc_rva);
+            let base_reloc_rva = page_rva + to_usize!(offset);
 
-                let base_reloc = image.read_from_rva::<Va>(base_reloc_rva)?;
+            eprintln!("Found reloc {:#X?}", base_reloc_rva);
 
-                eprintln!("Read reloc {:#X?}", base_reloc);
+            let base_reloc = image.read_from_rva::<Va>(base_reloc_rva)?;
 
-                let new_base_reloc = base_reloc - old_image_base + new_image_base;
+            eprintln!("Read reloc {:#X?}", base_reloc);
 
-                image.write_to_rva(base_reloc_rva, new_base_reloc)?;
+            let new_base_reloc = base_reloc - old_image_base + new_image_base;
 
-                eprintln!("Wrote new reloc {:#X?}", new_base_reloc);
-            }
+            image.write_to_rva(base_reloc_rva, new_base_reloc)?;
+
+            eprintln!("Wrote new reloc {:#X?}", new_base_reloc);
         }
+    }
 
-        Ok(())
-    }*/
+    Ok(())
 }

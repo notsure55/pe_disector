@@ -7,6 +7,7 @@ fn main() -> Result<()> {
     let sample_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples\\");
 
     let exe = pe::ImageOwned::from_path(sample_path.join("sample.exe"))?;
+
     dbg!(&exe.section_table());
 
     let bytes = exe.section_bytes();
