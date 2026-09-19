@@ -1,4 +1,5 @@
 use super::dos_header::DosHeader;
+use super::import_table::ImportTable;
 use super::nt_header::NtHeader;
 use super::section_table::SectionTable;
 use crate::to_prim;
@@ -20,6 +21,8 @@ pub struct Image {
     nt_header: NtHeader,
     #[ref_mut]
     section_table: SectionTable,
+    #[ref_mut]
+    import_table: Option<ImportTable>,
 }
 
 impl fmt::Debug for Image {
@@ -54,12 +57,17 @@ impl Image {
             to_prim!(nt_header.get_file_header().number_of_sections => usize),
         );
 
-        Ok(Self {
+        let mut image = Self {
             bytes,
             dos_header,
             nt_header,
             section_table,
-        })
+            import_table: None,
+        };
+
+        image.import_table = ImportTable::from_image(&image);
+
+        Ok(image)
     }
 
     pub fn bytes(&self) -> &[u8] {
@@ -110,6 +118,14 @@ impl Image {
     pub fn read_from_rva<T>(&self, rva: Rva) -> T {
         let fo = self.rva_to_fo(rva).unwrap();
         self.read_from_fo(fo)
+    }
+
+    pub fn read_cstr_from_fo(&self, fo: Fo) -> Result<String> {
+        let bytes = self.bytes();
+
+        Ok(std::ffi::CStr::from_bytes_until_nul(&bytes[fo..])?
+            .to_string_lossy()
+            .into_owned())
     }
 
     pub fn write_to_va<T>(&self, va: Va, value: T) {

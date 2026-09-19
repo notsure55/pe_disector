@@ -2,6 +2,7 @@
 
 mod dos_header;
 pub mod image;
+mod import_table;
 mod nt_header;
 mod section_table;
 

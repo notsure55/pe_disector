@@ -1,5 +1,5 @@
 use anyhow::Result;
-use pe_disector_v2::image::*;
+use pe_disector::image::*;
 use std::path::Path;
 
 fn main() -> Result<()> {
