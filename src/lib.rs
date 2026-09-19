@@ -1,138 +1,44 @@
-#![allow(unused)]
+#![allow(unused_unsafe)]
 
-use std::path::Path;
+mod dos_header;
+pub mod image;
+mod nt_header;
+mod section_table;
 
-mod arch;
-mod exception;
-mod export;
-mod import;
-pub mod pe;
-mod pe_headers;
-mod relocation;
-pub mod section;
-pub mod windows_types;
-
-use pe::*;
-
-#[test]
-fn va_to_fo_check() {
-    const MAIN_START_ADDRESS: usize = 0x140001090;
-
-    let sample_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples\\sample.exe");
-
-    let image = PeImage::from_path(sample_path).unwrap();
-
-    let fo = image.va_to_fo(Va::from(MAIN_START_ADDRESS)).unwrap();
-    let first_ins: [u8; 4] = image.read_from_fo(fo);
-
-    assert_eq!(first_ins, [0x48, 0x83, 0xec, 0x28]);
+#[macro_export]
+macro_rules! convert_unsafe_cell_bytes {
+    ($ptr:expr => $typ:ty) => {
+        {
+            use crate::convert_mut_ref;
+            convert_mut_ref!((&mut *($ptr)) => $typ)
+        }
+    };
+    ($ptr:expr => $typ:ty, $offset:ident) => {
+        {
+            use crate::convert_mut_ref;
+            let slice = (&mut *$ptr).get_mut($offset..).unwrap();
+            convert_mut_ref!(slice => $typ)
+        }
+    };
 }
 
 #[macro_export]
-macro_rules! c_str {
-    ($str:expr) => {{
-        use std::ffi::CStr;
+macro_rules! convert_mut_ref {
+    ($ptr:expr => $typ:ty) => {
+        unsafe { $ptr.as_mut_ptr().cast::<$typ>() }
+    };
+}
 
-        CStr::from_bytes_until_nul($str)
+#[macro_export]
+macro_rules! to_prim {
+    ($name:ident as $typ:ty) => {{
+        <$typ>::try_from($name)
+            .map_err(|err| eprintln!("{err} {:#?}", $name))
             .unwrap()
-            .to_string_lossy()
-            .into()
     }};
-}
-
-#[macro_export]
-macro_rules! to_usize {
-    ($var:expr) => {
-        usize::try_from($var)?
-    };
-}
-
-#[macro_export]
-macro_rules! to_bytes {
-    ($target:expr) => {{
-        let size = std::mem::size_of_val(&$target);
-        unsafe {
-            let ptr = (&raw const $target).cast::<u8>();
-            std::slice::from_raw_parts(ptr, size)
-        }
+    ($name:expr => $typ:ty) => {{
+        <$typ>::try_from($name)
+            .map_err(|err| eprintln!("{err} {:#?}", $name))
+            .unwrap()
     }};
-}
-
-use std::convert;
-use std::ops;
-
-#[macro_export]
-macro_rules! impl_arithmetic_traits_for_wrappers {
-    ($name:ident, $type:ty) => {
-        #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
-        pub struct $name($type);
-
-        impl convert::From<$type> for $name {
-            fn from(value: $type) -> Self {
-                Self { 0: value }
-            }
-        }
-        impl ops::Add<$type> for $name {
-            type Output = Self;
-
-            fn add(self, other: $type) -> Self {
-                Self(self.0 + other)
-            }
-        }
-        impl ops::Add<Self> for $name {
-            type Output = Self;
-
-            fn add(self, other: Self) -> Self {
-                Self(self.0 + other.0)
-            }
-        }
-        impl ops::Sub<Self> for $name {
-            type Output = Self;
-
-            fn sub(self, other: Self) -> Self {
-                Self(self.0 + other.0)
-            }
-        }
-        impl ops::BitOr<$type> for $name {
-            type Output = Self;
-
-            // rhs is the "right-hand side" of the expression `a | b`
-            fn bitor(self, rhs: $type) -> Self::Output {
-                Self(self.0 | rhs)
-            }
-        }
-        impl ops::BitAnd<$type> for $name {
-            type Output = Self;
-
-            // rhs is the "right-hand side" of the expression `a | b`
-            fn bitand(self, rhs: $type) -> Self::Output {
-                Self(self.0 & rhs)
-            }
-        }
-        impl ops::Deref for $name {
-            type Target = $type;
-
-            fn deref(&self) -> &Self::Target {
-                &self.0
-            }
-        }
-        impl convert::TryFrom<u32> for $name {
-            type Error = anyhow::Error;
-
-            fn try_from(value: u32) -> Result<Self, Self::Error> {
-                Ok(Self {
-                    0: usize::try_from(value)?,
-                })
-            }
-        }
-        impl convert::TryFrom<u64> for $name {
-            type Error = anyhow::Error;
-
-            fn try_from(value: u64) -> Result<Self, Self::Error> {
-                Ok(Self {
-                    0: usize::try_from(value)?,
-                })
-            }
-        }
-    };
 }

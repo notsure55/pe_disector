@@ -3,5 +3,14 @@ name = "pe_disector"
 version = "0.1.0"
 edition = "2024"
 
+[workspace]
+resolver = "3"
+members = [
+        "proc_macros/ref_mut_field"
+]
+
 [dependencies]
 anyhow = "1.0.104"
+windows_types = { path = "../windows_types/"}
+ref_mut_field = { path = "./proc_macros/ref_mut_field/" }
+
