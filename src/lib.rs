@@ -2,31 +2,17 @@
 
 mod dos_header;
 pub mod image;
-mod import_table;
+mod imports;
 mod nt_header;
 mod section_table;
 
 #[macro_export]
-macro_rules! convert_unsafe_cell_bytes {
-    ($ptr:expr => $typ:ty) => {
-        {
-            use crate::convert_mut_ref;
-            convert_mut_ref!((&mut *($ptr)) => $typ)
-        }
-    };
-    ($ptr:expr => $typ:ty, $offset:ident) => {
-        {
-            use crate::convert_mut_ref;
-            let slice = (&mut *$ptr).get_mut($offset..).unwrap();
-            convert_mut_ref!(slice => $typ)
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! convert_mut_ref {
+macro_rules! convert_mut_slice_to_ptr {
     ($ptr:expr => $typ:ty) => {
         unsafe { $ptr.as_mut_ptr().cast::<$typ>() }
+    };
+    ($ptr:expr => $typ:ty, $offset:expr) => {
+        unsafe { $ptr.as_mut_ptr().byte_offset(crate::to_prim!($offset => isize)).cast::<$typ>() }
     };
 }
 

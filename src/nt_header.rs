@@ -1,4 +1,4 @@
-use crate::to_prim;
+use crate::convert_mut_slice_to_ptr;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use windows_types::{IMAGE_NT_HEADERS, IMAGE_NT_HEADERS64};
@@ -23,15 +23,10 @@ impl Deref for NtHeader {
 }
 
 impl NtHeader {
-    pub fn from_bytes(bytes: *mut Vec<u8>, e_lfanew: u32) -> Self {
-        let raw = unsafe {
-            (&mut *bytes)
-                .as_mut_ptr()
-                .byte_offset(to_prim!(e_lfanew as isize))
-                .cast::<IMAGE_NT_HEADERS64>()
-        };
+    pub fn from_bytes(bytes: &mut [u8], e_lfanew: u32) -> Self {
+        let raw = convert_mut_slice_to_ptr!(bytes => IMAGE_NT_HEADERS64, e_lfanew);
 
-        let machine = unsafe { raw.as_ref_unchecked().get_file_header().machine };
+        let machine = unsafe { raw.as_ref().unwrap().get_file_header().machine };
 
         if machine != 0x8664 {
             todo!("Implement support for the other architectures!");

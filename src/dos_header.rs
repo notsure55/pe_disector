@@ -1,4 +1,4 @@
-use crate::convert_unsafe_cell_bytes;
+use crate::convert_mut_slice_to_ptr;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use windows_types::IMAGE_DOS_HEADER;
@@ -23,8 +23,8 @@ impl Deref for DosHeader {
 }
 
 impl DosHeader {
-    pub fn from_bytes(bytes: *mut Vec<u8>) -> Self {
-        let raw = convert_unsafe_cell_bytes!(bytes => IMAGE_DOS_HEADER);
+    pub fn from_bytes(bytes: &mut [u8]) -> Self {
+        let raw = convert_mut_slice_to_ptr!(bytes => IMAGE_DOS_HEADER);
 
         Self { raw }
     }

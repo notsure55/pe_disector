@@ -24,12 +24,12 @@ impl Deref for SectionHeader {
 }
 
 impl SectionHeader {
-    pub fn from_bytes(raw: *mut IMAGE_SECTION_HEADER, bytes: *mut Vec<u8>) -> Self {
+    pub fn from_bytes(raw: *mut IMAGE_SECTION_HEADER, bytes: &mut [u8]) -> Self {
         unsafe {
             let pointer_to_raw_data = to_prim!((&*raw).pointer_to_raw_data => usize);
             let size_of_raw_data = to_prim!((&*raw).size_of_raw_data => usize);
 
-            let section_bytes = (&mut *bytes)
+            let section_bytes = bytes
                 .get_mut(pointer_to_raw_data..pointer_to_raw_data + size_of_raw_data)
                 .unwrap() as *mut [u8];
 

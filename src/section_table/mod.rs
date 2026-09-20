@@ -1,4 +1,4 @@
-use crate::convert_unsafe_cell_bytes;
+use crate::convert_mut_slice_to_ptr;
 use ref_mut_field::RefMutFields;
 use windows_types::IMAGE_SECTION_HEADER;
 
@@ -12,10 +12,10 @@ pub struct SectionTable {
 }
 
 impl SectionTable {
-    pub fn from_bytes(bytes: *mut Vec<u8>, start: usize, section_count: usize) -> Self {
+    pub fn from_bytes(bytes: &mut [u8], start: usize, section_count: usize) -> Self {
         let headers = unsafe {
             std::slice::from_raw_parts_mut(
-                convert_unsafe_cell_bytes!(bytes => IMAGE_SECTION_HEADER, start),
+                convert_mut_slice_to_ptr!(bytes => IMAGE_SECTION_HEADER, start),
                 section_count,
             )
         };

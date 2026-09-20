@@ -13,5 +13,8 @@ fn main() -> Result<()> {
 
     let section_table = exe.get_section_table();
 
+    let mut import_table = exe.get_import_table_mut().as_mut().unwrap();
+    import_table.update_iat("KERNEL32.dll", "GetLastError", 0x100000);
+
     Ok(())
 }

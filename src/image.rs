@@ -1,5 +1,5 @@
 use super::dos_header::DosHeader;
-use super::import_table::ImportTable;
+use super::imports::import_table::ImportTable;
 use super::nt_header::NtHeader;
 use super::section_table::SectionTable;
 use crate::to_prim;
@@ -44,12 +44,13 @@ impl Image {
         file.read_to_end(&mut buf)?;
 
         let bytes = UnsafeCell::new(buf);
+        let bytes_mut_slice = unsafe { bytes.get().as_mut_unchecked().as_mut_slice() };
 
-        let dos_header = DosHeader::from_bytes(bytes.get());
-        let nt_header = NtHeader::from_bytes(bytes.get(), dos_header.e_lfanew);
+        let dos_header = DosHeader::from_bytes(bytes_mut_slice);
+        let nt_header = NtHeader::from_bytes(bytes_mut_slice, dos_header.e_lfanew);
 
         let section_table = SectionTable::from_bytes(
-            bytes.get(),
+            bytes_mut_slice,
             to_prim!(dos_header.e_lfanew => usize)
                 + std::mem::size_of_val(&nt_header.get_file_header())
                 + std::mem::size_of_val(&nt_header.get_signature())
@@ -174,6 +175,6 @@ impl Image {
     }
 }
 
-type Fo = usize;
-type Rva = usize;
-type Va = usize;
+pub type Fo = usize;
+pub type Rva = usize;
+pub type Va = usize;
