@@ -1,6 +1,7 @@
 #![allow(unused_unsafe)]
 
 mod dos_header;
+mod exports;
 pub mod image;
 mod imports;
 mod nt_header;

@@ -43,8 +43,6 @@ impl ImportTable {
             }).collect()
         };
 
-        println!("{:#X?}", import_descriptors);
-
         Some(Self { import_descriptors })
     }
     pub fn update_iat(
@@ -70,7 +68,7 @@ impl ImportTable {
                     });
 
             if let Some(index) = import_index {
-                println!("Found {index:?} index for {function_ident:#X?}");
+                println!("Found {index:?} index for {function_ident:#X?}, setting symbol to {function_va:#X?}");
 
                 let iat = dll_import.iat_mut();
 
@@ -82,7 +80,7 @@ impl ImportTable {
                 ));
             }
         } else {
-            return Err(anyhow!("Failed to {}", dll_name.as_ref()));
+            return Err(anyhow!("Failed to find {}", dll_name.as_ref()));
         }
 
         Ok(())

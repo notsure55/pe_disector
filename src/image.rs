@@ -1,4 +1,5 @@
 use super::dos_header::DosHeader;
+use super::exports::export_table::ExportTable;
 use super::imports::import_table::ImportTable;
 use super::nt_header::NtHeader;
 use super::section_table::SectionTable;
@@ -23,6 +24,8 @@ pub struct Image {
     section_table: SectionTable,
     #[ref_mut]
     import_table: Option<ImportTable>,
+    #[ref_mut]
+    export_table: Option<ExportTable>,
 }
 
 impl fmt::Debug for Image {
@@ -64,9 +67,11 @@ impl Image {
             nt_header,
             section_table,
             import_table: None,
+            export_table: None,
         };
 
         image.import_table = ImportTable::from_image(&image);
+        image.export_table = ExportTable::from_image(&image)?;
 
         Ok(image)
     }
