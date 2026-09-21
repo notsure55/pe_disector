@@ -1,4 +1,5 @@
 use super::dos_header::DosHeader;
+use super::exception_table::ExceptionTable;
 use super::exports::export_table::ExportTable;
 use super::imports::import_table::ImportTable;
 use super::nt_header::NtHeader;
@@ -26,6 +27,8 @@ pub struct Image {
     import_table: Option<ImportTable>,
     #[ref_mut]
     export_table: Option<ExportTable>,
+    #[ref_mut]
+    exception_table: Option<ExceptionTable>,
 }
 
 impl fmt::Debug for Image {
@@ -68,10 +71,14 @@ impl Image {
             section_table,
             import_table: None,
             export_table: None,
+            exception_table: None,
         };
 
         image.import_table = ImportTable::from_image(&image);
         image.export_table = ExportTable::from_image(&image)?;
+        image.exception_table = ExceptionTable::from_image(&image)?;
+
+        println!("{:#X?}", image.exception_table);
 
         Ok(image)
     }
