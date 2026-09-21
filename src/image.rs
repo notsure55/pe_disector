@@ -3,6 +3,7 @@ use super::exception_table::ExceptionTable;
 use super::exports::export_table::ExportTable;
 use super::imports::import_table::ImportTable;
 use super::nt_header::NtHeader;
+use super::reloc::relocation_table::RelocationTable;
 use super::section_table::SectionTable;
 use crate::to_prim;
 use anyhow::Result;
@@ -29,6 +30,8 @@ pub struct Image {
     export_table: Option<ExportTable>,
     #[ref_mut]
     exception_table: Option<ExceptionTable>,
+    #[ref_mut]
+    relocation_table: Option<RelocationTable>,
 }
 
 impl fmt::Debug for Image {
@@ -72,13 +75,13 @@ impl Image {
             import_table: None,
             export_table: None,
             exception_table: None,
+            relocation_table: None,
         };
 
         image.import_table = ImportTable::from_image(&image);
         image.export_table = ExportTable::from_image(&image)?;
         image.exception_table = ExceptionTable::from_image(&image)?;
-
-        println!("{:#X?}", image.exception_table);
+        image.relocation_table = RelocationTable::from_image(&image)?;
 
         Ok(image)
     }

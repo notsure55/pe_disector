@@ -1,12 +1,12 @@
 #![allow(unused_unsafe)]
 
-mod base_reloc;
 mod dos_header;
 mod exception_table;
 mod exports;
 pub mod image;
 mod imports;
 mod nt_header;
+mod reloc;
 mod section_table;
 
 #[macro_export]
