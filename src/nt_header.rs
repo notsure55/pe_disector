@@ -10,7 +10,7 @@ pub struct NtHeader {
 
 impl DerefMut for NtHeader {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        unsafe { self.raw.as_mut_unchecked() }
+        unsafe { self.raw.as_mut().unwrap() }
     }
 }
 
@@ -18,7 +18,7 @@ impl Deref for NtHeader {
     type Target = dyn IMAGE_NT_HEADERS;
 
     fn deref(&self) -> &Self::Target {
-        unsafe { self.raw.as_ref_unchecked() }
+        unsafe { self.raw.as_ref().unwrap() }
     }
 }
 

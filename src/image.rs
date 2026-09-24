@@ -2,9 +2,11 @@ use super::dos_header::DosHeader;
 use super::exception_table::ExceptionTable;
 use super::exports::export_table::ExportTable;
 use super::imports::import_table::ImportTable;
+use super::load_configuration::LoadConfigDirectory;
 use super::nt_header::NtHeader;
 use super::reloc::relocation_table::RelocationTable;
 use super::section_table::SectionTable;
+use super::tls::TlsDirectory;
 use crate::to_prim;
 use anyhow::Result;
 use ref_mut_field::RefMutFields;
@@ -32,6 +34,10 @@ pub struct Image {
     exception_table: Option<ExceptionTable>,
     #[ref_mut]
     relocation_table: Option<RelocationTable>,
+    #[ref_mut]
+    tls_directory: Option<TlsDirectory>,
+    #[ref_mut]
+    load_config_directory: Option<LoadConfigDirectory>,
 }
 
 impl fmt::Debug for Image {
@@ -76,14 +82,23 @@ impl Image {
             export_table: None,
             exception_table: None,
             relocation_table: None,
+            tls_directory: None,
+            load_config_directory: None,
         };
 
         image.import_table = ImportTable::from_image(&image);
         image.export_table = ExportTable::from_image(&image)?;
         image.exception_table = ExceptionTable::from_image(&image)?;
         image.relocation_table = RelocationTable::from_image(&image)?;
+        image.tls_directory = TlsDirectory::from_image(&image)?;
+        image.load_config_directory = LoadConfigDirectory::from_image(&image)?;
 
         Ok(image)
+    }
+
+    // Equivelent to LoadLibrary
+    pub fn map_image_to_virtual_memory(&self) -> Option<()> {
+        None
     }
 
     pub fn bytes(&self) -> &[u8] {

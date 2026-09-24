@@ -6,7 +6,9 @@ edition = "2024"
 [workspace]
 resolver = "3"
 members = [
-        "proc_macros/ref_mut_field"
+        "proc_macros/ref_mut_field",
+        "samples/sample",
+        "samples/sample1"
 ]
 
 [dependencies]

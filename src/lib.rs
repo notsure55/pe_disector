@@ -5,9 +5,11 @@ mod exception_table;
 mod exports;
 pub mod image;
 mod imports;
+mod load_configuration;
 mod nt_header;
 mod reloc;
 mod section_table;
+mod tls;
 
 #[macro_export]
 macro_rules! convert_mut_slice_to_ptr {
