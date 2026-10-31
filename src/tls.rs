@@ -3,7 +3,7 @@ use crate::{convert_mut_slice_to_ptr, to_prim};
 use anyhow::Result;
 use std::ops::Deref;
 use std::ops::DerefMut;
-use windows_types::{IMAGE_TLS_DIRECTORY, IMAGE_TLS_DIRECTORY64};
+use windows_types::user::{IMAGE_TLS_DIRECTORY, IMAGE_TLS_DIRECTORY64};
 
 const IMAGE_TLS_DIRECTORY_INDEX: usize = 9;
 
@@ -48,9 +48,8 @@ impl TlsDirectory {
             .va_to_fo(to_prim!(tls_directory_ref.get_address_of_callbacks() => Va))
             .unwrap();
 
-        if image.read_from_fo::<u32>(address_of_callbacks_fo) > 0 {
-            println!("must handle tls callbacks!");
-        }
+        // TODO; dont really give fuzzle boput this
+        if image.read_from_fo::<u32>(address_of_callbacks_fo) > 0 {}
 
         Ok(Some(Self { raw: tls_directory }))
     }

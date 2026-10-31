@@ -3,7 +3,7 @@ use crate::{convert_mut_slice_to_ptr, to_prim};
 use anyhow::Result;
 use ref_mut_field::RefMutFields;
 use std::fmt;
-use windows_types::IMAGE_FUNCTION_ENTRY64;
+use windows_types::user::IMAGE_FUNCTION_ENTRY64;
 
 const IMAGE_EXCEPTION_DIRECTORY_INDEX: usize = 3;
 

@@ -3,7 +3,7 @@ use crate::{convert_mut_slice_to_ptr, to_prim};
 use anyhow::Result;
 use std::ops::Deref;
 use std::ops::DerefMut;
-use windows_types::{IMAGE_LOAD_CONFIG_DIRECTORY, IMAGE_LOAD_CONFIG_DIRECTORY64};
+use windows_types::user::{IMAGE_LOAD_CONFIG_DIRECTORY, IMAGE_LOAD_CONFIG_DIRECTORY64};
 
 const IMAGE_LOAD_CONFIG_DIRECTORY_INDEX: usize = 10;
 

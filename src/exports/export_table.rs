@@ -5,7 +5,7 @@ use ref_mut_field::RefMutFields;
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::ops::DerefMut;
-use windows_types::IMAGE_EXPORT_DIRECTORY;
+use windows_types::user::IMAGE_EXPORT_DIRECTORY;
 
 const IMAGE_EXPORT_DIRECTORY_INDEX: usize = 0;
 

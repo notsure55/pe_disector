@@ -2,7 +2,7 @@ use super::dll_import::DllImport;
 use crate::image::{Image, Va};
 use crate::{convert_mut_slice_to_ptr, to_prim};
 use std::collections::BTreeMap;
-use windows_types::IMAGE_IMPORT_DESCRIPTOR;
+use windows_types::user::IMAGE_IMPORT_DESCRIPTOR;
 
 use anyhow::{anyhow, Result};
 
@@ -30,16 +30,22 @@ impl ImportTable {
             return None;
         }
 
+        let descriptor_count = to_prim!(import_directory.size => usize)
+            / std::mem::size_of::<IMAGE_IMPORT_DESCRIPTOR>()
+            - 1;
+
         let import_descriptors: BTreeMap<String, DllImport> = unsafe {
             std::slice::from_raw_parts_mut(
                 convert_mut_slice_to_ptr!(image.bytes_mut() => IMAGE_IMPORT_DESCRIPTOR,
                                           image.rva_to_fo(to_prim!(import_directory.virtual_address => usize)).unwrap()),
-                to_prim!(import_directory.size => usize)
-                    / std::mem::size_of::<IMAGE_IMPORT_DESCRIPTOR>() - 1,
-            ).iter_mut().map(|desc| {
-                let dll_import = DllImport::from_raw_and_image(desc as _, &image).unwrap();
-                let name = image.read_cstr_from_fo(image.rva_to_fo(to_prim!(dll_import.name => usize)).unwrap()).unwrap();
-                (name, dll_import)
+                descriptor_count,
+            ).iter_mut().map_while(|desc| {
+                if let Some(dll_import) = DllImport::from_raw_and_image(desc as _, &image) {
+                    let name = image.read_cstr_from_fo(image.rva_to_fo(to_prim!(dll_import.name => usize)).unwrap()).unwrap();
+                    Some((name, dll_import))
+                } else {
+                    None
+                }
             }).collect()
         };
 
@@ -72,7 +78,7 @@ impl ImportTable {
 
                 let iat = dll_import.iat_mut();
 
-                iat[index] = function_va;
+                iat[index] = function_va as *mut _;
             } else {
                 return Err(anyhow!(
                     "Failed to find function index for {function_ident:?} in {}",

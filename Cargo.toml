@@ -13,6 +13,6 @@ members = [
 
 [dependencies]
 anyhow = "1.0.104"
-windows_types = { path = "../windows_types/"}
+windows_types = { path = "../windows_types/", features = ["user"]}
 ref_mut_field = { path = "./proc_macros/ref_mut_field/" }
 

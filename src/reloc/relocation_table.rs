@@ -3,7 +3,7 @@ use crate::image::{Image, Rva, Va};
 use crate::{convert_mut_slice_to_ptr, to_prim};
 use anyhow::Result;
 use ref_mut_field::RefMutFields;
-use windows_types::IMAGE_BASE_RELOCATION;
+use windows_types::user::IMAGE_BASE_RELOCATION;
 
 const IMAGE_RELOCATION_DIRECTORY_INDEX: usize = 5;
 

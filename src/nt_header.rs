@@ -1,7 +1,7 @@
 use crate::convert_mut_slice_to_ptr;
 use std::ops::Deref;
 use std::ops::DerefMut;
-use windows_types::{IMAGE_NT_HEADERS, IMAGE_NT_HEADERS64};
+use windows_types::user::{IMAGE_NT_HEADERS, IMAGE_NT_HEADERS64};
 
 #[derive(Debug)]
 pub struct NtHeader {

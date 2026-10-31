@@ -1,7 +1,7 @@
 use crate::convert_mut_slice_to_ptr;
 use std::ops::Deref;
 use std::ops::DerefMut;
-use windows_types::IMAGE_DOS_HEADER;
+use windows_types::user::IMAGE_DOS_HEADER;
 
 #[derive(Debug)]
 pub struct DosHeader {

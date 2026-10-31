@@ -95,9 +95,11 @@ impl Image {
 
         Ok(image)
     }
-
-    // Equivelent to LoadLibrary
-    pub fn map_image_to_virtual_memory(&self) -> Option<()> {
+    // TODO Equivelent to LoadLibrary
+    // LoadLibraryW
+    // LoadLibraryExW
+    // LdrLoadDll
+    pub fn map_image_to_virtual_memory(&self) -> Option<Self> {
         None
     }
 
@@ -120,7 +122,7 @@ impl Image {
             }
         }
 
-        todo!("Handle invalid address inputs");
+        None
     }
 
     pub fn va_to_rva(&self, va: Va) -> Rva {
@@ -134,6 +136,21 @@ impl Image {
     pub fn read_from_va<T>(&self, va: Va) -> T {
         let fo = self.va_to_fo(va).unwrap();
         self.read_from_fo(fo)
+    }
+
+    pub fn read_buffer_from_va(&self, va: Va, size: usize) -> Vec<u8> {
+        let fo = self.va_to_fo(va).unwrap();
+        self.read_buffer_from_fo(fo, size)
+    }
+
+    pub fn read_buffer_from_fo(&self, fo: Fo, size: usize) -> Vec<u8> {
+        let bytes = self.bytes();
+
+        if let Some(slice) = bytes.get(fo..fo + size) {
+            slice.to_vec()
+        } else {
+            todo!("Handle unreachable file offset")
+        }
     }
 
     pub fn read_from_fo<T>(&self, fo: Fo) -> T {

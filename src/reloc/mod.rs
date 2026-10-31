@@ -1,7 +1,7 @@
 use crate::image::Va;
 use std::ops::Deref;
 use std::ops::DerefMut;
-use windows_types::IMAGE_BASE_RELOCATION;
+use windows_types::user::IMAGE_BASE_RELOCATION;
 
 use std::fmt;
 pub mod relocation_table;

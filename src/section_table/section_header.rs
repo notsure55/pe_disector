@@ -1,7 +1,7 @@
 use crate::to_prim;
 use std::ops::Deref;
 use std::ops::DerefMut;
-use windows_types::IMAGE_SECTION_HEADER;
+use windows_types::user::IMAGE_SECTION_HEADER;
 
 #[derive(Debug)]
 pub struct SectionHeader {

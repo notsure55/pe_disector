@@ -1,4 +1,4 @@
-use windows_types::{IMAGE_IMPORT_BY_NAME, IMAGE_IMPORT_BY_ORDINAL};
+use windows_types::user::{IMAGE_IMPORT_BY_NAME, IMAGE_IMPORT_BY_ORDINAL};
 
 mod dll_import;
 pub mod import_table;
